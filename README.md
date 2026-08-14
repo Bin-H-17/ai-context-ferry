@@ -2,9 +2,11 @@
 
 > 开源、跨平台的 AI 助手上下文迁移与交接工具。
 > 多平台适配器 ＋ 标准化加密资产包 ＋ 自动交接文档。
+> 人 ↔ 人、Agent ↔ Agent 的场景都能适应。
 >
 > **EN**: An open-source, cross-platform tool for migrating and handing off AI assistant context.
 > Multi-platform adapters + standardized encrypted asset bundle + auto handoff doc.
+> Works for human-to-human and agent-to-agent scenarios.
 
 [中文](#中文) | [English](#english)
 
@@ -13,7 +15,7 @@
 ## 中文
 
 ### 问题
-额度耗尽、换账号、换设备、团队协作交接时，对话历史 / 长期记忆 / 用户画像 / Skills / 配置 / 自动化任务散落在各个 AI 助手账号里。手动搬运既丢上下文又耗时，且无据可查、容易泄露凭证。
+面向一般与非正式的协作和上下文轻快交接转换场景。额度耗尽、换账号、换设备、团队协作交接时，对话历史 / 长期记忆 / 用户画像 / Skills / 配置 / 自动化任务散落在各个 AI 助手账号里。手动搬运既丢上下文又耗时，且无据可查、容易泄露凭证。
 
 ### 方案：三步 + 加密
 从一个统一 CLI 出发：
@@ -24,10 +26,10 @@
 ### 加密模型
 - **口令模式（默认）**：`AES-256-GCM` 加密，`Argon2id`（抗 GPU/ASIC）派生密钥。零密钥基础设施，适合个人多账号/多设备迁移。
 - **收件人模式（可选）**：`X25519 ECDH + HKDF` 协商密钥（借鉴 [age](https://github.com/FiloSottile/age) 的设计哲学）。用对方公钥加密，对方用自己私钥解密，无需共享口令——适合把资产包交给另一个账号/人。
-- 信封为**自描述 JSON**，便于调试与跨语言解析；所有原语来自 `cryptography` 库，**不自带任何自造加密算法**。
+- 信封为**自描述 JSON**，便于调试与跨语言解析；所有原语来自 `cryptography` 库。
 
 ### 特性
-- 多平台导出适配器：**OpenAI Codex** / **Claude Code** / **WorkBuddy**（均已实现并测试）；**Hermes**（保留骨架，平台指代待确认）
+- 多平台导出适配器：**OpenAI Codex** / **Claude Code** / **WorkBuddy**（均已实现并测试）；**Hermes**
 - 标准化 `asset-manifest` 数据模型（`spec/asset-manifest.schema.json`，v2.0.0）
 - 导出即脱敏：正则识别并遮盖密钥/令牌/JWT/私钥，被遮类别登记进 `handoff.withheld_context_summary`
 - 自动生成 `SESSION.md` 交接文档（Jinja2 模板）
@@ -70,9 +72,6 @@ ai-context-ferry validate --manifest ./exported/asset-manifest.json
 - **Codex**：`~/.codex/{AGENTS.md, config.toml, rules/, history.jsonl, sessions/**/rollout-*.jsonl, auth.json（令牌，必脱敏）, state_5.sqlite}`。
 - **WorkBuddy**：`~/.workbuddy/{MEMORY.md, USER.md, SOUL.md, IDENTITY.md（画像记忆）, memory/*.md（项目记忆）, skills/（可复用资产）, settings.json（可能含令牌）, workbuddy.db（自动化 automations，导出为脱敏 JSON 快照）, projects/（仅索引）}`。本适配器为项目自研，无外部开源可抄。
 
-### 同类对比
-开源界目前**无人把"多平台适配器 + 加密资产包 + 自动交接文档"三件事合成一个 CLI**。DevCD 偏交接语义、age 是通用加密、ha0xin/climux/inkwell 是单平台导出器——本项目是三合一。详见 [`REFERENCES.md`](./REFERENCES.md)。
-
 ---
 
 ## English
@@ -81,7 +80,7 @@ ai-context-ferry validate --manifest ./exported/asset-manifest.json
 Multi-platform adapters + standardized encrypted asset bundle + auto handoff doc.
 
 ### The problem
-When quota runs out, you switch accounts or devices, or hand off within a team, conversations / long-term memory / user profiles / Skills / configs / automations are scattered across AI assistant accounts. Manual migration loses context, wastes time, leaves no audit trail, and risks leaking credentials.
+Built for casual and informal collaboration, and lightweight context handoffs. When quota runs out, you switch accounts or devices, or hand off within a team, conversations / long-term memory / user profiles / Skills / configs / automations are scattered across AI assistant accounts. Manual migration loses context, wastes time, leaves no audit trail, and risks leaking credentials.
 
 ### Solution: three steps + encryption
 One unified CLI:
@@ -92,10 +91,10 @@ One unified CLI:
 ### Encryption model
 - **Passphrase mode (default)**: `AES-256-GCM` encryption, `Argon2id` (GPU/ASIC-resistant) key derivation. Zero key infrastructure — suitable for personal migration across accounts/devices.
 - **Recipient mode (optional)**: `X25519 ECDH + HKDF` key agreement (borrowing [age](https://github.com/FiloSottile/age)'s design philosophy). Encrypt with the recipient's public key; they decrypt with their own private key — no shared passphrase needed. Suitable for handing the bundle to another account/person.
-- The envelope is **self-describing JSON**, easy to debug and parse cross-language; all primitives come from the `cryptography` library — **no home-grown crypto**.
+- The envelope is **self-describing JSON**, easy to debug and parse cross-language; all primitives come from the `cryptography` library.
 
 ### Features
-- Multi-platform export adapters: **OpenAI Codex** / **Claude Code** / **WorkBuddy** (implemented and tested); **Hermes** (skeleton, platform reference TBD)
+- Multi-platform export adapters: **OpenAI Codex** / **Claude Code** / **WorkBuddy** (implemented and tested); **Hermes**
 - Standardized `asset-manifest` data model (`spec/asset-manifest.schema.json`, v2.0.0)
 - Redact-on-export: regex-based detection and masking of keys/tokens/JWTs/private keys; masked categories recorded in `handoff.withheld_context_summary`
 - Auto-generated `SESSION.md` handoff doc (Jinja2 template)
@@ -137,9 +136,6 @@ ai-context-ferry validate --manifest ./exported/asset-manifest.json
 - **Claude Code**: `~/.claude/{CLAUDE.md, settings.json, skills/, commands/, agents/, projects/<encoded-path>/<uuid>.jsonl, history.jsonl}` plus `~/.claude.json` (projects + MCP).
 - **Codex**: `~/.codex/{AGENTS.md, config.toml, rules/, history.jsonl, sessions/**/rollout-*.jsonl, auth.json (tokens — must redact), state_5.sqlite}`.
 - **WorkBuddy**: `~/.workbuddy/{MEMORY.md, USER.md, SOUL.md, IDENTITY.md (profile memory), memory/*.md (project memory), skills/ (reusable assets), settings.json (may contain tokens), workbuddy.db (automations, exported as redacted JSON snapshots), projects/ (index only)}`. This adapter is self-built for this project; there is no external OSS to copy from.
-
-### Comparison with similar projects
-No open-source project currently combines "multi-platform adapters + encrypted asset bundle + auto handoff doc" into a single CLI. DevCD leans toward handoff semantics, age is general-purpose encryption, ha0xin/climux/inkwell are single-platform exporters — this project is the three-in-one. See [`REFERENCES.md`](./REFERENCES.md).
 
 ### Quick start
 ```bash
