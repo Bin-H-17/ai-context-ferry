@@ -2,6 +2,9 @@
 
 > 开源、跨平台的 AI 助手上下文迁移与交接工具。
 > **护城河 = 多平台适配器 ＋ 标准化加密资产包 ＋ 自动交接文档，三合一。**
+>
+> **EN**: An open-source, cross-platform tool for migrating and handing off AI assistant context.
+> **Moat = multi-platform adapters + standardized encrypted asset bundle + auto handoff doc, combined.**
 
 [中文](#中文) | [English](#english)
 
@@ -74,14 +77,69 @@ ai-context-ferry validate --manifest ./exported/asset-manifest.json
 
 ## English
 
-**ai-context-ferry** is an open-source, cross-platform CLI to migrate and hand off your AI assistant context (conversations, long-term memory, skills, configs, automations) — encrypted and standardized.
+**ai-context-ferry** is an open-source, cross-platform CLI to migrate and hand off your AI assistant context (conversations, long-term memory, user profiles, skills, configs, automations) — encrypted and standardized.
+**Moat = multi-platform adapters + standardized encrypted asset bundle + auto handoff doc, combined.**
 
-Three steps + encryption:
-1. `export` — pull assets via per-platform adapters, with automatic secret redaction.
-2. `package` — bundle into an encrypted `.ferry` asset package (AES-256-GCM; Argon2id KDF in passphrase mode, or X25519 recipient mode).
-3. `handoff` — decrypt and render a structured `SESSION.md` handoff doc (Jinja2).
+### The pain point
+When quota runs out, you switch accounts or devices, or hand off within a team, conversations / long-term memory / user profiles / Skills / configs / automations are scattered across AI assistant accounts. Manual migration loses context, wastes time, leaves no audit trail, and risks leaking credentials.
 
-Supported adapters: **OpenAI Codex**, **Claude Code**, **WorkBuddy** (implemented + tested); **Hermes** (skeleton). Moat = adapters + encrypted asset bundle + auto handoff doc, combined. See [`REFERENCES.md`](./REFERENCES.md) for attributions.
+### Solution: three steps + encryption
+One unified CLI:
+1. **`export`** — pull conversations, memory, configs and other assets via per-platform adapters, with **automatic redaction** of keys/tokens.
+2. **`package`** — bundle into an **encrypted asset package** (`.ferry`) following the standardized asset manifest (`asset-manifest` v2.0.0, see `spec/`).
+3. **`handoff`** — decrypt and render a structured handoff doc (`SESSION.md`, see `templates/`) with asset inventory, key decisions, remaining blockers, and next-step suggestions.
+
+### Encryption model (secure, convenient, seamless)
+- **Passphrase mode (default)**: `AES-256-GCM` encryption, `Argon2id` (GPU/ASIC-resistant) key derivation. Zero key infrastructure — best for seamless personal migration across accounts/devices.
+- **Recipient mode (optional)**: `X25519 ECDH + HKDF` key agreement (borrowing [age](https://github.com/FiloSottile/age)'s design philosophy). Encrypt with the recipient's public key; they decrypt with their own private key — no shared passphrase needed. Best for handing the bundle to another account/person.
+- The envelope is **self-describing JSON**, easy to debug and parse cross-language; all primitives come from the `cryptography` library — **no home-grown crypto**.
+
+### Features
+- Multi-platform export adapters: **OpenAI Codex** / **Claude Code** / **WorkBuddy** (implemented and tested); **Hermes** (skeleton, platform reference TBD)
+- Standardized `asset-manifest` data model (`spec/asset-manifest.schema.json`, v2.0.0)
+- Redact-on-export: regex-based detection and masking of keys/tokens/JWTs/private keys; masked categories recorded in `handoff.withheld_context_summary`
+- Auto-generated `SESSION.md` handoff doc (Jinja2 template)
+- End-to-end loop: `export → package → handoff`, all covered by tests
+- Fully local, open source (MIT), auditable
+
+### Install
+```bash
+pip install -e .
+# or use a venv directly
+python -m venv .venv && .venv/Scripts/python -m pip install cryptography jinja2 jsonschema
+```
+
+### Usage
+```bash
+# List registered platforms
+ai-context-ferry list-platforms
+
+# 1) Export (empty account = current user home dir; can also point at a backup/mounted dir)
+ai-context-ferry export --platform claude_code --account "" --out ./exported
+
+# 2a) Package in passphrase mode (interactive passphrase)
+ai-context-ferry package --input ./exported --output ./bundle.ferry --passphrase "your passphrase"
+
+# 2b) Package in recipient mode (keygen first to get the recipient's public key)
+ai-context-ferry keygen --save ./keys.json
+ai-context-ferry package --input ./exported --output ./bundle.ferry \
+    --recipient "<recipient X25519 public key base64>"
+
+# 3) Hand off: decrypt and render SESSION.md
+ai-context-ferry handoff --bundle ./bundle.ferry --output ./SESSION.md --passphrase "your passphrase"
+# Recipient mode: --identity "<recipient private key base64>"
+
+# Validate the manifest against the schema
+ai-context-ferry validate --manifest ./exported/asset-manifest.json
+```
+
+### Platform disk layouts (built from public docs + known structures)
+- **Claude Code**: `~/.claude/{CLAUDE.md, settings.json, skills/, commands/, agents/, projects/<encoded-path>/<uuid>.jsonl, history.jsonl}` plus `~/.claude.json` (projects + MCP).
+- **Codex**: `~/.codex/{AGENTS.md, config.toml, rules/, history.jsonl, sessions/**/rollout-*.jsonl, auth.json (tokens — must redact), state_5.sqlite}`.
+- **WorkBuddy**: `~/.workbuddy/{MEMORY.md, USER.md, SOUL.md, IDENTITY.md (profile memory), memory/*.md (project memory), skills/ (reusable assets), settings.json (may contain tokens), workbuddy.db (automations, exported as redacted JSON snapshots), projects/ (index only)}`. This adapter is self-built for this project; there is no external OSS to copy from.
+
+### Differentiation
+No open-source project currently combines "multi-platform adapters + encrypted asset bundle + auto handoff doc" into a single CLI. DevCD leans toward handoff semantics, age is general-purpose encryption, ha0xin/climux/inkwell are single-platform exporters — this project is the three-in-one. See [`REFERENCES.md`](./REFERENCES.md).
 
 ### Quick start
 ```bash
