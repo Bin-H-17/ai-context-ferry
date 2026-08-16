@@ -1,4 +1,9 @@
 # ai-context-ferry
+[![CI](https://github.com/Bin-H-17/ai-context-ferry/actions/workflows/ci.yml/badge.svg)](https://github.com/Bin-H-17/ai-context-ferry/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/Bin-H-17/ai-context-ferry/badge)](https://securityscorecards.dev/viewer/?uri=github.com/Bin-H-17/ai-context-ferry)
+[![SonarCloud](https://sonarcloud.io/api/project_badges/measure?project=Bin-H-17_ai-context-ferry&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=Bin-H-17_ai-context-ferry)
+[![codecov](https://codecov.io/gh/Bin-H-17/ai-context-ferry/branch/main/graph/badge.svg)](https://codecov.io/gh/Bin-H-17/ai-context-ferry)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 > 开源、跨平台的 AI 助手上下文迁移与交接工具。
 > 多平台适配器 ＋ 标准化加密资产包 ＋ 自动交接文档。
