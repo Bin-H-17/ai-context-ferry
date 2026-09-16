@@ -9,7 +9,7 @@ jobs:
   sonarcloud:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Check SONAR_TOKEN
@@ -24,7 +24,7 @@ jobs:
             echo "have=true" >> "$GITHUB_OUTPUT"
           fi
       - if: steps.sonar_token.outputs.have == 'true'
-        uses: SonarSource/sonarqube-scan-action@v5
+        uses: SonarSource/sonarqube-scan-action@v8
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
           SONAR_HOST_URL: https://sonarcloud.io
