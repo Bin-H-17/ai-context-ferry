@@ -39,7 +39,7 @@
 - age 是通用加密工具，不感知 AI 上下文资产；
 - ha0xin/climux/inkwell/houyanchao 是单一平台或单一环节的导出器。
 
-**本项目的护城河 = 三合一**：多平台适配器（Claude Code / Codex / …）＋ 标准化加密资产包（JSON Schema v2.0.0）＋ 自动 `SESSION.md` 交接文档。开源界目前**无人把这三件事合成一个 CLI**。这正是本项目的差异化定位。
+**本项目特点 = 三合一**：多平台适配器（Claude Code / Codex / …）＋ 标准化加密资产包（JSON Schema v2.0.0）＋ 自动 `SESSION.md` 交接文档。开源界目前**没有把这三件事合成一个 CLI 的同类工具**。这是本项目的定位。
 
 ---
 
